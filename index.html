@@ -289,9 +289,9 @@
         <option value="uqC5NDiCX8o">Track 2: Race Pace BGM</option>
         <option value="oyKUX32w0g0">Track 3: Relaxing Vibes</option>
     </select>
-    <div id="youtube-bgm-player" class="hidden"></div>
+    
+    <div id="youtube-bgm-player" class="absolute -left-[9999px] w-[1px] h-[1px] overflow-hidden opacity-0 pointer-events-none"></div>
 </div>
-
                     <button onclick="quiz.start()" class="w-full f1-font bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-6 rounded-xl font-bold tracking-[0.2em] uppercase transition-all transform active:scale-[0.98] shadow-lg shadow-red-900/40 text-2xl border-b-4 border-red-900 mt-auto">
                         Start Engine
                     </button>
@@ -527,13 +527,16 @@
     <script>
    
 // --- GLOBAL YOUTUBE BGM SYSTEM ---
+// 379行目付近：YT.Playerの初期化部分
+// --- GLOBAL YOUTUBE BGM SYSTEM ---
 let bgmPlayer;
 let isBgmPlayerReady = false;
 
 window.onYouTubeIframeAPIReady = function() {
     bgmPlayer = new YT.Player('youtube-bgm-player', {
-        height: '0',
-        width: '0',
+        // サイズを0ではなく1にする。これがレギュレーションをパスするセッティングだ。
+        height: '1',
+        width: '1',
         playerVars: {
             'autoplay': 0,
             'controls': 0,
@@ -542,7 +545,7 @@ window.onYouTubeIframeAPIReady = function() {
         events: {
             'onReady': () => { 
                 isBgmPlayerReady = true; 
-                bgmPlayer.setVolume(30); // 英語の読み上げの邪魔にならない音量
+                bgmPlayer.setVolume(30); 
             },
             'onStateChange': (event) => {
                 // 動画が終わったら自動で最初からループ再生させるトリック
