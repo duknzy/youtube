@@ -14,6 +14,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
@@ -382,6 +383,14 @@
                                 </span>
                                 <input type="checkbox" id="radio-mode" class="accent-f1 w-5 h-5 cursor-pointer" onchange="quiz.updateSummary()">
                             </label>
+
+                            <label class="flex items-center justify-between cursor-pointer group bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-gray-600 transition-colors">
+                                    <span class="text-xs font-bold text-gray-300 group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                                                <span class="text-blue-500">🎵</span> BGM RADIO
+                                                </span>
+                                                    <input type="checkbox" id="bgm-mode" class="accent-f1 w-5 h-5 cursor-pointer" checked>
+                                                </label>
+                                                <div id="youtube-bgm-player" class="hidden"></div>
                             
                             <div id="spelling-option-container" class="hidden">
                                  <label class="flex items-center justify-between cursor-pointer group bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-gray-600 transition-colors">
@@ -510,6 +519,32 @@
 
     <script>
    
+    // --- YOUTUBE BGM PLAYER SETUP ---
+let bgmPlayer;
+let isBgmPlayerReady = false;
+
+window.onYouTubeIframeAPIReady = function() {
+    bgmPlayer = new YT.Player('youtube-bgm-player', {
+        height: '0',
+        width: '0',
+        videoId: 'bhcYDRYNB8c', // ★ここを好きなBGMの動画IDに変えろ
+        playerVars: {
+            'autoplay': 0,
+            'controls': 0,
+            'loop': 1,
+            'playlist': 'bhcYDRYNB8c' // ★ここも同じ動画IDにする（ループさせるため）
+        },
+        events: {
+            'onReady': () => { 
+                isBgmPlayerReady = true; 
+                bgmPlayer.setVolume(30); // 音声(単語の読み上げ)を邪魔しないよう音量は30%に絞る
+                console.log("Team Radio (BGM) System Ready."); 
+            }
+        }
+    });
+};
+// --------------------------------
+
       const rawData = `
       follow: ～の後に続く、～に従う
 consider: ～を考慮する
@@ -2841,6 +2876,21 @@ lest: ～しないように
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             
+            // --- ここから追加：BGM再生のトリガー ---
+            const bgmCheckbox = document.getElementById('bgm-mode');
+            if (typeof isBgmPlayerReady !== 'undefined' && isBgmPlayerReady) {
+                if (bgmCheckbox && bgmCheckbox.checked) {
+                    // 再生中(1)でなければ再生する
+                    if (bgmPlayer.getPlayerState() !== 1) {
+                        bgmPlayer.playVideo();
+                    }
+                } else {
+                    // チェックが外れていれば一時停止
+                    bgmPlayer.pauseVideo();
+                }
+            }
+            // --- ここまで ---
+
             // 常にVocabモード
             this.startVocabMode();
         }
