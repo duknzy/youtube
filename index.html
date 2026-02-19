@@ -277,6 +277,21 @@
                         </button>
                     </div>
 
+                    <div class="bg-gray-900/30 p-4 rounded-xl border border-gray-700 flex flex-col gap-3 mb-4">
+    <div class="flex justify-between items-center">
+        <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest flex items-center gap-2">
+            <span class="text-blue-500 text-sm">📻</span> GLOBAL TEAM RADIO
+        </span>
+        <button id="global-bgm-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-4 py-2 rounded-lg uppercase transition-colors shadow-lg active:scale-95">POWER ON</button>
+    </div>
+    <select id="global-bgm-select" class="w-full bg-black/50 text-white p-2.5 rounded-lg border border-gray-600 focus:border-blue-500 outline-none font-mono text-xs cursor-pointer">
+        <option value="bhcYDRYNB8c">Track 1: Focus Lofi </option>
+        <option value="uqC5NDiCX8o">Track 2: Race Pace BGM</option>
+        <option value="oyKUX32w0g0">Track 3: Relaxing Vibes</option>
+    </select>
+    <div id="youtube-bgm-player" class="hidden"></div>
+</div>
+
                     <button onclick="quiz.start()" class="w-full f1-font bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-6 rounded-xl font-bold tracking-[0.2em] uppercase transition-all transform active:scale-[0.98] shadow-lg shadow-red-900/40 text-2xl border-b-4 border-red-900 mt-auto">
                         Start Engine
                     </button>
@@ -383,14 +398,6 @@
                                 </span>
                                 <input type="checkbox" id="radio-mode" class="accent-f1 w-5 h-5 cursor-pointer" onchange="quiz.updateSummary()">
                             </label>
-
-                            <label class="flex items-center justify-between cursor-pointer group bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-gray-600 transition-colors">
-                                    <span class="text-xs font-bold text-gray-300 group-hover:text-blue-400 transition-colors flex items-center gap-2">
-                                                <span class="text-blue-500">🎵</span> BGM RADIO
-                                                </span>
-                                                    <input type="checkbox" id="bgm-mode" class="accent-f1 w-5 h-5 cursor-pointer" checked>
-                                                </label>
-                                                <div id="youtube-bgm-player" class="hidden"></div>
                             
                             <div id="spelling-option-container" class="hidden">
                                  <label class="flex items-center justify-between cursor-pointer group bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-gray-600 transition-colors">
@@ -519,7 +526,7 @@
 
     <script>
    
-    // --- YOUTUBE BGM PLAYER SETUP ---
+// --- GLOBAL YOUTUBE BGM SYSTEM ---
 let bgmPlayer;
 let isBgmPlayerReady = false;
 
@@ -527,23 +534,63 @@ window.onYouTubeIframeAPIReady = function() {
     bgmPlayer = new YT.Player('youtube-bgm-player', {
         height: '0',
         width: '0',
-        videoId: 'bhcYDRYNB8c', // ★ここを好きなBGMの動画IDに変えろ
         playerVars: {
             'autoplay': 0,
             'controls': 0,
-            'loop': 1,
-            'playlist': 'bhcYDRYNB8c' // ★ここも同じ動画IDにする（ループさせるため）
+            'rel': 0
         },
         events: {
             'onReady': () => { 
                 isBgmPlayerReady = true; 
-                bgmPlayer.setVolume(30); // 音声(単語の読み上げ)を邪魔しないよう音量は30%に絞る
-                console.log("Team Radio (BGM) System Ready."); 
+                bgmPlayer.setVolume(30); // 英語の読み上げの邪魔にならない音量
+            },
+            'onStateChange': (event) => {
+                // 動画が終わったら自動で最初からループ再生させるトリック
+                if (event.data === YT.PlayerState.ENDED) {
+                    bgmPlayer.playVideo();
+                }
             }
         }
     });
 };
-// --------------------------------
+
+// UIのボタン操作と連動させる
+document.addEventListener('DOMContentLoaded', () => {
+    const bgmBtn = document.getElementById('global-bgm-btn');
+    const bgmSelect = document.getElementById('global-bgm-select');
+    
+    if (bgmBtn && bgmSelect) {
+        bgmBtn.addEventListener('click', () => {
+            if (!isBgmPlayerReady) {
+                console.warn("Radio is still booting...");
+                return;
+            }
+            
+            if (bgmBtn.innerText === "POWER ON") {
+                // 再生開始
+                bgmPlayer.loadVideoById(bgmSelect.value);
+                bgmBtn.innerText = "POWER OFF";
+                bgmBtn.classList.replace('bg-blue-600', 'bg-red-600');
+                bgmBtn.classList.replace('hover:bg-blue-500', 'hover:bg-red-500');
+            } else {
+                // 停止
+                bgmPlayer.pauseVideo();
+                bgmBtn.innerText = "POWER ON";
+                bgmBtn.classList.replace('bg-red-600', 'bg-blue-600');
+                bgmBtn.classList.replace('hover:bg-red-500', 'hover:bg-blue-500');
+            }
+        });
+
+        // BGMの選択肢を変えた時の挙動
+        bgmSelect.addEventListener('change', () => {
+            // すでにONになっているなら、選んだ瞬間に新しい曲を流す
+            if (bgmBtn.innerText === "POWER OFF") {
+                bgmPlayer.loadVideoById(bgmSelect.value);
+            }
+        });
+    }
+});
+// ---------------------------------
 
       const rawData = `
       follow: ～の後に続く、～に従う
@@ -2876,21 +2923,6 @@ lest: ～しないように
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             
-            // --- ここから追加：BGM再生のトリガー ---
-            const bgmCheckbox = document.getElementById('bgm-mode');
-            if (typeof isBgmPlayerReady !== 'undefined' && isBgmPlayerReady) {
-                if (bgmCheckbox && bgmCheckbox.checked) {
-                    // 再生中(1)でなければ再生する
-                    if (bgmPlayer.getPlayerState() !== 1) {
-                        bgmPlayer.playVideo();
-                    }
-                } else {
-                    // チェックが外れていれば一時停止
-                    bgmPlayer.pauseVideo();
-                }
-            }
-            // --- ここまで ---
-
             // 常にVocabモード
             this.startVocabMode();
         }
