@@ -1,16 +1,16 @@
-const CACHE_NAME = 'rb-hybrid-v7'; 
+const CACHE_NAME = 'rb-hybrid-v7'; // v7にアップデートしたのは良い判断だ
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './icon.png',       // manifest.json で指定されているアイコン
-  './F1.jpg',    // ★ HTMLの poster と apple-touch-icon で使用 (追加)
-  './f1.mp4'
+  './F1.jpg',         // ★ HTMLの poster と apple-touch-icon で使用 (追加)
+  './f1.mp4',         // ←★ ここにカンマが必要！
   './晋平太.m4a',
   './sum.m4a',
-  './focus.m4a'  
-  './hoodstar.m4a'      // ★ HTMLの videoタグ で使用 (test.mp4 から変更)
-  './stay.m4a' 
+  './focus.m4a',      // ←★ ここにカンマが必要！
+  './hoodstar.m4a',   // ←★ ここにカンマが必要！
+  './stay.m4a',       // ←★ ここにカンマが必要！
   './R指定.m4a' 
 ];
 
