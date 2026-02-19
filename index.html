@@ -14,7 +14,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
@@ -285,13 +284,12 @@
         <button id="global-bgm-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-4 py-2 rounded-lg uppercase transition-colors shadow-lg active:scale-95">POWER ON</button>
     </div>
     <select id="global-bgm-select" class="w-full bg-black/50 text-white p-2.5 rounded-lg border border-gray-600 focus:border-blue-500 outline-none font-mono text-xs cursor-pointer">
-        <option value="bhcYDRYNB8c">Track 1: Focus Lofi </option>
-        <option value="uqC5NDiCX8o">Track 2: Race Pace BGM</option>
-        <option value="oyKUX32w0g0">Track 3: Relaxing Vibes</option>
+        <option value="./focus.m4a">Track 1: Focus Lofi</option>
+        <option value="./hoodstar.m4a">Track 2: Race Pace BGM</option>
+        <option value="./stay.m4a">Track 3: Relaxing Vibes</option>
     </select>
-    
-    <div id="youtube-bgm-player" class="absolute -left-[9999px] w-[1px] h-[1px] overflow-hidden opacity-0 pointer-events-none"></div>
 </div>
+
                     <button onclick="quiz.start()" class="w-full f1-font bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-6 rounded-xl font-bold tracking-[0.2em] uppercase transition-all transform active:scale-[0.98] shadow-lg shadow-red-900/40 text-2xl border-b-4 border-red-900 mt-auto">
                         Start Engine
                     </button>
@@ -526,75 +524,6 @@
 
     <script>
    
-// --- GLOBAL YOUTUBE BGM SYSTEM ---
-// 379行目付近：YT.Playerの初期化部分
-// --- GLOBAL YOUTUBE BGM SYSTEM ---
-let bgmPlayer;
-let isBgmPlayerReady = false;
-
-window.onYouTubeIframeAPIReady = function() {
-    bgmPlayer = new YT.Player('youtube-bgm-player', {
-        // サイズを0ではなく1にする。これがレギュレーションをパスするセッティングだ。
-        height: '1',
-        width: '1',
-        playerVars: {
-            'autoplay': 0,
-            'controls': 0,
-            'rel': 0
-        },
-        events: {
-            'onReady': () => { 
-                isBgmPlayerReady = true; 
-                bgmPlayer.setVolume(30); 
-            },
-            'onStateChange': (event) => {
-                // 動画が終わったら自動で最初からループ再生させるトリック
-                if (event.data === YT.PlayerState.ENDED) {
-                    bgmPlayer.playVideo();
-                }
-            }
-        }
-    });
-};
-
-// UIのボタン操作と連動させる
-document.addEventListener('DOMContentLoaded', () => {
-    const bgmBtn = document.getElementById('global-bgm-btn');
-    const bgmSelect = document.getElementById('global-bgm-select');
-    
-    if (bgmBtn && bgmSelect) {
-        bgmBtn.addEventListener('click', () => {
-            if (!isBgmPlayerReady) {
-                console.warn("Radio is still booting...");
-                return;
-            }
-            
-            if (bgmBtn.innerText === "POWER ON") {
-                // 再生開始
-                bgmPlayer.loadVideoById(bgmSelect.value);
-                bgmBtn.innerText = "POWER OFF";
-                bgmBtn.classList.replace('bg-blue-600', 'bg-red-600');
-                bgmBtn.classList.replace('hover:bg-blue-500', 'hover:bg-red-500');
-            } else {
-                // 停止
-                bgmPlayer.pauseVideo();
-                bgmBtn.innerText = "POWER ON";
-                bgmBtn.classList.replace('bg-red-600', 'bg-blue-600');
-                bgmBtn.classList.replace('hover:bg-red-500', 'hover:bg-blue-500');
-            }
-        });
-
-        // BGMの選択肢を変えた時の挙動
-        bgmSelect.addEventListener('change', () => {
-            // すでにONになっているなら、選んだ瞬間に新しい曲を流す
-            if (bgmBtn.innerText === "POWER OFF") {
-                bgmPlayer.loadVideoById(bgmSelect.value);
-            }
-        });
-    }
-});
-// ---------------------------------
-
       const rawData = `
       follow: ～の後に続く、～に従う
 consider: ～を考慮する
@@ -2627,6 +2556,47 @@ lest: ～しないように
 
     document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
     document.addEventListener('touchmove', function(event) { if (event.scale !== 1) { event.preventDefault(); } }, { passive: false });
+
+
+// --- GLOBAL AUDIO BGM SYSTEM ---
+const bgmAudio = new Audio();
+bgmAudio.loop = true; // ループ再生
+bgmAudio.volume = 0.3; // 単語の音声読み上げを邪魔しない音量に設定
+
+document.addEventListener('DOMContentLoaded', () => {
+    const bgmBtn = document.getElementById('global-bgm-btn');
+    const bgmSelect = document.getElementById('global-bgm-select');
+    
+    // 初期トラックのセットアップ
+    if (bgmSelect) bgmAudio.src = bgmSelect.value;
+
+    if (bgmBtn && bgmSelect) {
+        bgmBtn.addEventListener('click', () => {
+            if (bgmBtn.innerText === "POWER ON") {
+                // 再生開始
+                bgmAudio.play().catch(e => console.error("Audio play failed:", e));
+                bgmBtn.innerText = "POWER OFF";
+                bgmBtn.classList.replace('bg-blue-600', 'bg-red-600');
+                bgmBtn.classList.replace('hover:bg-blue-500', 'hover:bg-red-500');
+            } else {
+                // 停止
+                bgmAudio.pause();
+                bgmBtn.innerText = "POWER ON";
+                bgmBtn.classList.replace('bg-red-600', 'bg-blue-600');
+                bgmBtn.classList.replace('hover:bg-red-500', 'hover:bg-blue-500');
+            }
+        });
+
+        // 選曲変更時の挙動
+        bgmSelect.addEventListener('change', () => {
+            bgmAudio.src = bgmSelect.value;
+            // すでにONになっているなら、選んだ瞬間に新しい曲を流す
+            if (bgmBtn.innerText === "POWER OFF") {
+                bgmAudio.play().catch(e => console.error("Audio play failed:", e));
+            }
+        });
+    }
+});
 
     class HybridQuiz {
         constructor() {
