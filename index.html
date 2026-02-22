@@ -2996,11 +2996,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         nextFlashcard() {
             if (this.currentIndex < this.questions.length - 1) {
+                // まだ同じラウンド内に単語が残っているなら次へ
                 this.currentIndex++;
                 this.showFlashcard();
             } else {
-                // セクター完了で自動的にガレージへ戻る
-                this.exitFlashcardMode();
+                // 現在のラウンドが終了した場合の処理
+                const currentRound = this.vocabRounds[this.currentRoundIndex];
+                
+                // カスタムやランダム等の単発セッションではなく、次のラウンドが存在する場合
+                if (currentRound.id !== 'custom' && currentRound.id !== 'random' && this.currentRoundIndex + 1 < this.vocabRounds.length) {
+                    
+                    // 次のラウンドへギアを上げる（セレクトボックスの表示も同期）
+                    const selector = document.getElementById('round-selector');
+                    selector.value = this.currentRoundIndex + 1;
+                    
+                    // 次のラウンドでFPモードを再スタート
+                    this.startFlashcardMode();
+                    
+                } else {
+                    // 全セクター完了、または特殊ラウンド終了時はガレージへ戻る
+                    this.exitFlashcardMode();
+                }
             }
         }
 
