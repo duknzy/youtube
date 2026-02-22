@@ -2958,7 +2958,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.showFlashcard();
         }
 
-        showFlashcard() {
+       showFlashcard() {
             if (this.questions.length === 0) return;
             const q = this.questions[this.currentIndex];
             document.getElementById('fc-progress').innerText = `LAP ${this.currentIndex + 1} / ${this.questions.length}`;
@@ -2981,6 +2981,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('fc-meaning').innerText = displayMeaning;
             document.getElementById('fc-meaning-container').classList.add('hidden'); // 裏面を隠す
+
+            // --- 追加: フラグ状態の確認と反映 ---
+            const currentWord = q.w;
+            const srsData = this.allMistakes ? this.allMistakes.find(m => m.word === currentWord || m.w === currentWord) : null;
+            const isBookmarked = srsData && srsData.bookmarked;
+            
+            const bookmarkBtn = document.getElementById('fc-bookmark-btn');
+            if (bookmarkBtn) {
+                if (isBookmarked) {
+                    bookmarkBtn.innerText = '🚩';
+                } else {
+                    bookmarkBtn.innerText = '🏳️';
+                }
+            }
             
             // 英語が表面なら自動で読み上げ
             if (this.isAutoAudio && !this.isReverseMode) {
@@ -3020,6 +3034,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     // 全セクター完了、または特殊ラウンド終了時はガレージへ戻る
                     this.exitFlashcardMode();
+                }
+            }
+        }
+
+        async toggleFlashcardBookmark(event) {
+            // カード本体のフリップ処理（裏返し）が発動するのをブロックする
+            event.stopPropagation();
+            
+            const q = this.questions[this.currentIndex];
+            const safeW = encodeURIComponent(q.w);
+            const safeM = encodeURIComponent(q.m);
+            
+            // 既存のデータベース同期機能（toggleBookmark）を呼び出す
+            await window.toggleBookmark(safeW, safeM);
+            
+            // 状態を再確認してUIを即座に更新する
+            const srsData = this.allMistakes ? this.allMistakes.find(m => m.word === q.w || m.w === q.w) : null;
+            const isBookmarked = srsData && srsData.bookmarked;
+            
+            const bookmarkBtn = document.getElementById('fc-bookmark-btn');
+            if (bookmarkBtn) {
+                if (isBookmarked) {
+                    bookmarkBtn.innerText = '🚩';
+                } else {
+                    bookmarkBtn.innerText = '🏳️';
                 }
             }
         }
