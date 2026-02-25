@@ -528,10 +528,12 @@
         </div>
     </div>
     
-    <div id="fc-card" onclick="quiz.flipFlashcard()" class="flex-grow flex flex-col items-center justify-center bg-gray-900/60 border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-xl cursor-pointer transition-all active:scale-[0.98] relative p-6 mb-8 group shadow-inner">
+   <div id="fc-card" onclick="quiz.flipFlashcard()" class="flex-grow flex flex-col items-center justify-center bg-gray-900/60 border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-xl cursor-pointer transition-all active:scale-[0.98] relative p-6 mb-8 group shadow-inner">
         <span class="absolute top-4 text-[10px] text-gray-500 uppercase tracking-widest font-mono group-hover:text-blue-400 transition-colors animate-pulse">Tap to Reveal</span>
         
-       <button id="fc-bookmark-btn" onclick="event.stopPropagation(); quiz.toggleFlashcardBookmark(event);" class="absolute top-0 right-0 text-3xl p-6 z-20 cursor-pointer hover:scale-110 transition-transform">🏳️</button>
+        <button id="fc-speak-btn" onclick="event.stopPropagation(); quiz.speakFlashcardWord();" class="absolute top-0 left-0 text-3xl p-6 z-20 cursor-pointer hover:scale-110 transition-transform text-gray-400 hover:text-cyan-400 drop-shadow-md">🔊</button>
+
+        <button id="fc-bookmark-btn" onclick="event.stopPropagation(); quiz.toggleFlashcardBookmark(event);" class="absolute top-0 right-0 text-3xl p-6 z-20 cursor-pointer hover:scale-110 transition-transform drop-shadow-md">🏳️</button>
         
         <h2 id="fc-word" class="f1-font text-5xl md:text-7xl font-bold text-white tracking-wide break-words text-center mb-6 drop-shadow-lg transition-all mt-4"></h2>
         
@@ -539,7 +541,7 @@
             <h3 id="fc-meaning" class="text-2xl md:text-4xl font-bold text-yellow-400 tracking-wide break-words text-center"></h3>
         </div>
     </div>
-
+            
     <div class="grid grid-cols-3 gap-4">
         <button onclick="quiz.prevFlashcard()" class="bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-xl font-bold transition-all uppercase text-sm f1-font active:scale-95 border border-gray-600">◀ Prev</button>
         <button onclick="quiz.exitFlashcardMode()" class="bg-red-900/40 hover:bg-red-800/80 text-white py-4 rounded-xl font-bold transition-all uppercase text-sm f1-font border border-red-900 active:scale-95">Box (Exit)</button>
@@ -3061,6 +3063,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     bookmarkBtn.innerText = '🏳️';
                 }
             }
+        }
+
+        // --- 手動での音声再生処理 ---
+        speakFlashcardWord() {
+            if (this.questions.length === 0) return;
+            const q = this.questions[this.currentIndex];
+            // 表面が日本語(Reverse Mode)であっても、再生するのは常に英単語
+            this.speak(q.w);
         }
 
         prevFlashcard() {
